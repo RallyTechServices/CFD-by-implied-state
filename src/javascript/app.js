@@ -12,6 +12,7 @@ Ext.define("TSCFDByImpliedState", {
     },
                         
     launch: function() {
+        
        if ( ! this.getSetting('type_path') ) {
             this.down('#display_box').add({
                 xtype:'container',
@@ -24,8 +25,11 @@ Ext.define("TSCFDByImpliedState", {
     },
     
     _makeChart: function() {
+        var me = this;
         var container = this.down('#display_box');
         container.removeAll();
+        
+        this.setLoading("Gathering Data...");
 
         var project = this.getContext().getProject().ObjectID;
         var type_path = this.getSetting('type_path');
@@ -50,7 +54,12 @@ Ext.define("TSCFDByImpliedState", {
                     {property:'_ProjectHierarchy', value: project}
                 ],
                 fetch: [value_field,'ActualStartDate','ActualEndDate'],
-                removeUnauthorizedSnapshots : true
+                removeUnauthorizedSnapshots : true,
+                listeners: {
+                    load: function() {
+                        me.setLoading(false);
+                    }
+                }
             },
             chartConfig: {
                  chart: {

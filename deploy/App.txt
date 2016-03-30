@@ -3,11 +3,11 @@
 <head>
     <title>TS CFD by Implied State</title>
     <!--  (c) 2015,2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Tue Mar 29 2016 21:30:34 GMT-0700 (PDT) -->
+    <!--  Build Date: Wed Mar 30 2016 11:38:21 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Tue Mar 29 2016 21:30:34 GMT-0700 (PDT)";
-        var CHECKSUM = 8795352142;
+        var APP_BUILD_DATE = "Wed Mar 30 2016 11:38:21 GMT-0700 (PDT)";
+        var CHECKSUM = 8919239444;
     </script>
     
     <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
@@ -411,6 +411,7 @@ Ext.define("TSCFDByImpliedState", {
     },
                         
     launch: function() {
+        
        if ( ! this.getSetting('type_path') ) {
             this.down('#display_box').add({
                 xtype:'container',
@@ -423,8 +424,11 @@ Ext.define("TSCFDByImpliedState", {
     },
     
     _makeChart: function() {
+        var me = this;
         var container = this.down('#display_box');
         container.removeAll();
+        
+        this.setLoading("Gathering Data...");
 
         var project = this.getContext().getProject().ObjectID;
         var type_path = this.getSetting('type_path');
@@ -449,7 +453,12 @@ Ext.define("TSCFDByImpliedState", {
                     {property:'_ProjectHierarchy', value: project}
                 ],
                 fetch: [value_field,'ActualStartDate','ActualEndDate'],
-                removeUnauthorizedSnapshots : true
+                removeUnauthorizedSnapshots : true,
+                listeners: {
+                    load: function() {
+                        me.setLoading(false);
+                    }
+                }
             },
             chartConfig: {
                  chart: {
