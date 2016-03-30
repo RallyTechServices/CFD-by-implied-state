@@ -2,7 +2,16 @@ Ext.define("TSCFDByImpliedState", {
     extend: 'Rally.app.App',
     componentCls: 'app',
     logger: new Rally.technicalservices.Logger(),
-    defaults: { margin: 10 },
+    defaults: { 
+        margin: 10
+    },
+    
+    config: {
+        defaultSettings: {
+            metric_field: "Count"
+        }
+    },
+    
     items: [
         {xtype:'container',itemId:'display_box'}
     ],
@@ -100,56 +109,6 @@ Ext.define("TSCFDByImpliedState", {
             }
         });
     },
-      
-    _loadWsapiRecords: function(config){
-        var deferred = Ext.create('Deft.Deferred');
-        var me = this;
-        var default_config = {
-            model: 'Defect',
-            fetch: ['ObjectID']
-        };
-        this.logger.log("Starting load:",config.model);
-        Ext.create('Rally.data.wsapi.Store', Ext.Object.merge(default_config,config)).load({
-            callback : function(records, operation, successful) {
-                if (successful){
-                    deferred.resolve(records);
-                } else {
-                    me.logger.log("Failed: ", operation);
-                    deferred.reject('Problem loading: ' + operation.error.errors.join('. '));
-                }
-            }
-        });
-        return deferred.promise;
-    },
-
-    _loadAStoreWithAPromise: function(model_name, model_fields){
-        var deferred = Ext.create('Deft.Deferred');
-        var me = this;
-        this.logger.log("Starting load:",model_name,model_fields);
-          
-        Ext.create('Rally.data.wsapi.Store', {
-            model: model_name,
-            fetch: model_fields
-        }).load({
-            callback : function(records, operation, successful) {
-                if (successful){
-                    deferred.resolve(this);
-                } else {
-                    me.logger.log("Failed: ", operation);
-                    deferred.reject('Problem loading: ' + operation.error.errors.join('. '));
-                }
-            }
-        });
-        return deferred.promise;
-    },
-    
-    _displayGrid: function(store,field_names){
-        this.down('#display_box').add({
-            xtype: 'rallygrid',
-            store: store,
-            columnCfgs: field_names
-        });
-    },
     
     getOptions: function() {
         return [
@@ -176,6 +135,7 @@ Ext.define("TSCFDByImpliedState", {
         // Ext.apply(this, settings);
         this.launch();
     },
+    
     
     _addCountToChoices: function(store){
         store.add({name:'Count',value:'Count',fieldDefinition:{}});
@@ -245,19 +205,23 @@ Ext.define("TSCFDByImpliedState", {
             margin: 10,
             autoExpand: false,
             alwaysExpanded: false,
-            handlesEvents: { 
-                select: function(type_picker) {
-                    this.refreshWithNewModelType(type_picker.getValue());
-                },
-                ready: function(type_picker){
-                    this.refreshWithNewModelType(type_picker.getValue());
-                }
-            },
+            model: 'PortfolioItem',
+//            handlesEvents: { 
+//                select: function(type_picker) {
+//                    this.refreshWithNewModelType(type_picker.getValue());
+//                },
+//                ready: function(type_picker){
+//                    this.refreshWithNewModelType(type_picker.getValue());
+//                }
+//            },
             listeners: {
                 ready: function(field_box) {
                     me._addCountToChoices(field_box.getStore());
                     me._filterOutExceptNumbers(field_box.getStore());
                     var value = me.getSetting('metric_field');
+                    
+                    console.log('value:', value);
+                    
                     if ( value ) {
                         field_box.setValue(value);
                     }
