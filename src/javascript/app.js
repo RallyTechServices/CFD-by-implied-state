@@ -255,6 +255,7 @@ Ext.define("TSCFDByImpliedState", {
             },
             readyEvent: 'ready'
         },
+
         {
             name: 'start_date',
             xtype: 'rallydatefield',
@@ -262,7 +263,8 @@ Ext.define("TSCFDByImpliedState", {
             labelWidth: 100,
             labelAlign: 'left',
             minWidth: 200,
-            margin: 10
+            margin: 10,
+            format: 'Y-m-d'
         },
         {
             name: 'end_date',
@@ -271,7 +273,8 @@ Ext.define("TSCFDByImpliedState", {
             labelWidth: 100,
             labelAlign: 'left',
             minWidth: 200,
-            margin: 10
+            margin: 10,
+            format: 'Y-m-d'
         }];
     }
     

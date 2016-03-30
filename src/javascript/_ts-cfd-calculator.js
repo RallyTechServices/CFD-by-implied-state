@@ -44,10 +44,12 @@ Ext.define("Rally.TechnicalServices.ImpliedCFDCalculator", {
         }
         
         if ( this.startDate && ! /-/.test(this.startDate)  ){
+            console.log(this.startDate);
             throw "Failed to create Rally.TechnicalServices.ImpliedCFDCalculator: startDate must be a javascript date or ISO date string";
         }
 
         if ( this.endDate && ! /-/.test(this.endDate)  ){
+            console.log(this.endDate);
             throw "Failed to create Rally.TechnicalServices.ImpliedCFDCalculator: endDate must be a javascript date or ISO date string";
         }
     
