@@ -1,6 +1,17 @@
 #TS CFD by Implied State
 
-A cumulative flow diagram that assumes state (the group by) based on the actual start and end dates.
+A cumulative flow diagram for portfolio items that assumes state (the group by) 
+based on the actual start and end dates.  
+* Not Started = no actual start date,
+* In Progress = actual start date, but no actual end date
+* Done = has an actual end date
+
+![Chart](./images/chart.png)
+
+The Y axis calculation and Portfolio Item type can be chosen from settings.
+
+![Chart](./images/settings.png)
+
 
 ## Development Notes
 
