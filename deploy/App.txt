@@ -3,11 +3,11 @@
 <head>
     <title>TS CFD by Implied State</title>
     <!--  (c) 2015,2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Wed Mar 30 2016 11:59:30 GMT-0700 (PDT) -->
+    <!--  Build Date: Wed Mar 30 2016 12:07:10 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Wed Mar 30 2016 11:59:30 GMT-0700 (PDT)";
-        var CHECKSUM = 9164984437;
+        var APP_BUILD_DATE = "Wed Mar 30 2016 12:07:10 GMT-0700 (PDT)";
+        var CHECKSUM = 9328343673;
     </script>
     
     <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
@@ -276,6 +276,8 @@ Ext.define("Rally.TechnicalServices.ImpliedCFDCalculator", {
             { 
                 as: '__ImpliedState',
                 f : function(snapshot) {
+                    console.log(snapshot.ActualStartDate, snapshot.ObjectID);
+                    
                     if ( Ext.isEmpty(snapshot.ActualStartDate) ) {
                         return "Not Started";
                     }
@@ -611,6 +613,8 @@ Ext.define("TSCFDByImpliedState", {
     getSettingsFields: function() {
         var me = this;
         
+        var time_period = this.getSetting('time_period') || 1;
+        
         return [
         {
             name: 'type_path',
@@ -673,6 +677,7 @@ Ext.define("TSCFDByImpliedState", {
             labelAlign: 'left',
             minWidth: 200,
             margin: 10,
+            value: time_period,
             displayField: 'name',
             valueField: 'value',
             store: Ext.create('Rally.data.custom.Store',{

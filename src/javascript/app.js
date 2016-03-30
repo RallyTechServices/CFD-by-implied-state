@@ -212,6 +212,8 @@ Ext.define("TSCFDByImpliedState", {
     getSettingsFields: function() {
         var me = this;
         
+        var time_period = this.getSetting('time_period') || 1;
+        
         return [
         {
             name: 'type_path',
@@ -274,6 +276,7 @@ Ext.define("TSCFDByImpliedState", {
             labelAlign: 'left',
             minWidth: 200,
             margin: 10,
+            value: time_period,
             displayField: 'name',
             valueField: 'value',
             store: Ext.create('Rally.data.custom.Store',{

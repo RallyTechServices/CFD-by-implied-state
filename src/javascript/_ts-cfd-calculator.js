@@ -98,6 +98,8 @@ Ext.define("Rally.TechnicalServices.ImpliedCFDCalculator", {
             { 
                 as: '__ImpliedState',
                 f : function(snapshot) {
+                    console.log(snapshot.ActualStartDate, snapshot.ObjectID);
+                    
                     if ( Ext.isEmpty(snapshot.ActualStartDate) ) {
                         return "Not Started";
                     }
