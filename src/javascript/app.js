@@ -33,11 +33,13 @@ Ext.define("TSCFDByImpliedState", {
 
         var project = this.getContext().getProject().ObjectID;
         var type_path = this.getSetting('type_path');
-
-        var start_date = this.getSetting('start_date');
-        var end_date = this.getSetting('end_date');
-        
         var value_field = this.getSetting('metric_field');
+        var period_length = this.getSetting('time_period') || 1;
+
+        var title = "Implied CFD Over Last " + period_length + " Month(s)";
+        var start_date = Rally.util.DateTime.add(new Date(), 'month', -1 * period_length);
+        
+        console.log(title, start_date);
         
         container.add({
             xtype:'rallychart',
@@ -45,7 +47,7 @@ Ext.define("TSCFDByImpliedState", {
             calculatorType: 'Rally.TechnicalServices.ImpliedCFDCalculator',
             calculatorConfig: {
                 startDate: start_date,
-                endDate: end_date,
+                endDate: new Date(),
                 value_field: value_field
             },
             storeConfig: {
@@ -73,7 +75,7 @@ Ext.define("TSCFDByImpliedState", {
                      }
                  },
                  title: {
-                     text: 'Implied State CFD'
+                     text: title
                  },
                  xAxis: {
                      tickmarkPlacement: 'on',
@@ -264,26 +266,25 @@ Ext.define("TSCFDByImpliedState", {
             },
             readyEvent: 'ready'
         },
-
         {
-            name: 'start_date',
-            xtype: 'rallydatefield',
-            fieldLabel: 'Start Date',
+            name: 'time_period',
+            xtype: 'rallycombobox',
+            fieldLabel: 'Start',
             labelWidth: 100,
             labelAlign: 'left',
             minWidth: 200,
             margin: 10,
-            format: 'Y-m-d'
-        },
-        {
-            name: 'end_date',
-            xtype: 'rallydatefield',
-            fieldLabel: 'End Date',
-            labelWidth: 100,
-            labelAlign: 'left',
-            minWidth: 200,
-            margin: 10,
-            format: 'Y-m-d'
+            displayField: 'name',
+            valueField: 'value',
+            store: Ext.create('Rally.data.custom.Store',{
+                data: [
+                    {name:'A Month Ago', value:1},
+                    {name:'3 Months Ago', value:3},
+                    {name:'6 Months Ago', value:6},
+                    {name:'A Year Ago', value:12 },
+                    {name:'3 Years Ago', value:36 }
+                ]
+            })
         }];
     }
     
