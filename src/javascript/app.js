@@ -4,7 +4,6 @@ Ext.define("TSCFDByImpliedState", {
     logger: new Rally.technicalservices.Logger(),
     defaults: { margin: 10 },
     items: [
-        {xtype:'container',itemId:'message_box',tpl:'Hello, <tpl>{_refObjectName}</tpl>'},
         {xtype:'container',itemId:'display_box'}
     ],
 
@@ -13,24 +12,81 @@ Ext.define("TSCFDByImpliedState", {
     },
                         
     launch: function() {
-        var me = this;
-        this.setLoading("Loading stuff...");
+       if ( ! this.getSetting('type_path') ) {
+            this.down('#display_box').add({
+                xtype:'container',
+                html:'No settings applied.  Select "Edit App Settings." from the gear menu.'
+            });
+            return;
+        }
+        
+        this._makeChart();
+    },
+    
+    _makeChart: function() {
+        var container = this.down('#display_box');
+        container.removeAll();
 
-        this.down('#message_box').update(this.getContext().getUser());
+        var project = this.getContext().getProject().ObjectID;
+        var type_path = this.getSetting('type_path');
+
+        var start_date = this.getSetting('start_date');
+        var end_date = this.getSetting('end_date');
         
-        var model_name = 'Defect',
-            field_names = ['Name','State'];
+        var value_field = this.getSetting('metric_field');
         
-        this._loadAStoreWithAPromise(model_name, field_names).then({
-            scope: this,
-            success: function(store) {
-                this._displayGrid(store,field_names);
+        container.add({
+            xtype:'rallychart',
+            storeType: 'Rally.data.lookback.SnapshotStore',
+            calculatorType: 'Rally.TechnicalServices.ImpliedCFDCalculator',
+            calculatorConfig: {
+                startDate: start_date,
+                endDate: end_date,
+                value_field: value_field
             },
-            failure: function(error_message){
-                alert(error_message);
+            storeConfig: {
+                filters: [
+                    {property:'_TypeHierarchy',value: type_path},
+                    {property:'_ProjectHierarchy', value: project}
+                ],
+                fetch: [value_field,'ActualStartDate','ActualEndDate'],
+                removeUnauthorizedSnapshots : true
+            },
+            chartConfig: {
+                 chart: {
+                     zoomType: 'xy',
+                     //height: height,
+                     events: {
+                        redraw: function () {
+//                            me.logger.log('howdy');
+//                            me._preProcess();
+                        }
+                     }
+                 },
+                 title: {
+                     text: 'Implied State CFD'
+                 },
+                 xAxis: {
+                     tickmarkPlacement: 'on',
+                     tickInterval: 30,
+                     title: {
+                         text: ''
+                     }
+                 },
+                 yAxis: [
+                     {
+                         title: {
+                             text: value_field
+                         }
+                     }
+                 ],
+                 plotOptions: {
+                    series: {
+                        marker: { enabled: false },
+                        stacking: 'normal'
+                    }
+                }
             }
-        }).always(function() {
-            me.setLoading(false);
         });
     },
       

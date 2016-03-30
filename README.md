@@ -1,5 +1,7 @@
 #TS CFD by Implied State
 
+A cumulative flow diagram that assumes state (the group by) based on the actual start and end dates.
+
 ## Development Notes
 
 ### First Load
