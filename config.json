@@ -1,0 +1,5 @@
+{
+    "name": "TS CFD by Implied State",
+    "sdk": "2.0",
+    "className": "TSCFDByImpliedState"
+}
