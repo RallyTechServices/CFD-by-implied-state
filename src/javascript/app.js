@@ -45,7 +45,7 @@ Ext.define("TSCFDByImpliedState", {
         var value_field = this.getSetting('metric_field');
         var period_length = this.getSetting('time_period') || 1;
 
-        var title = "Implied CFD Over Last " + period_length + " Month(s)";
+        var title = "Implied State CFD Over Last " + period_length + " Month(s)";
         var start_date = Rally.util.DateTime.add(new Date(), 'month', -1 * period_length);
         
         console.log(title, start_date);
