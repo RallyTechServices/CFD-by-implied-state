@@ -13,7 +13,21 @@ Ext.define("Rally.TechnicalServices.ImpliedCFDCalculator", {
          */
         value_type: 'sum',
         endDate: null,
-        startDate: null
+        startDate: null,
+        
+        stateDisplayNames: ['Not Started','In Progress','Done'],
+        
+        stateDisplayFunction: function(snapshot) {            
+            if ( Ext.isEmpty(snapshot.ActualStartDate) ) {
+                return this.stateDisplayNames[2];
+            }
+            
+            if ( Ext.isEmpty(snapshot.ActualEndDate) ) {
+                return this.stateDisplayNames[1];
+            }
+            
+            return this.stateDisplayNames[0]
+        }
     },
     constructor: function (config) {
         this.callParent(arguments);
@@ -82,7 +96,7 @@ Ext.define("Rally.TechnicalServices.ImpliedCFDCalculator", {
             f: 'groupBySum',
             field: this.value_field, 
             groupByField: '__ImpliedState', 
-            allowedValues: ['Not Started','In Progress','Done'],
+            allowedValues: this.stateDisplayNames,
             display:'area'
         };
                 
@@ -94,21 +108,12 @@ Ext.define("Rally.TechnicalServices.ImpliedCFDCalculator", {
     },
     
     getDerivedFieldsOnInput: function() {
+        var me = this;
         return [
             { 
                 as: '__ImpliedState',
                 f : function(snapshot) {
-                    console.log(snapshot.ActualStartDate, snapshot.ObjectID);
-                    
-                    if ( Ext.isEmpty(snapshot.ActualStartDate) ) {
-                        return "Not Started";
-                    }
-                    
-                    if ( Ext.isEmpty(snapshot.ActualEndDate) ) {
-                        return "In Progress";
-                    }
-                    
-                    return "Done";
+                    return me.stateDisplayFunction(snapshot);
                 }
             }
         ];
