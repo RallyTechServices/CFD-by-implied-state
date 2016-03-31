@@ -47,9 +47,7 @@ Ext.define("TSCFDByImpliedState", {
 
         var title = "Implied State CFD Over Last " + period_length + " Month(s)";
         var start_date = Rally.util.DateTime.add(new Date(), 'month', -1 * period_length);
-        
-        console.log(title, start_date);
-        
+                
         container.add({
             xtype:'rallychart',
             storeType: 'Rally.data.lookback.SnapshotStore',
@@ -72,6 +70,7 @@ Ext.define("TSCFDByImpliedState", {
                     }
                 }
             },
+            chartColors : ["#CCCCCC","#00a9e0","#009933"],
             chartConfig: {
                  chart: {
                      zoomType: 'xy',
