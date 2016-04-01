@@ -48,6 +48,24 @@ Ext.define("TSCFDByImpliedState", {
         var title = "Implied State CFD Over Last " + period_length + " Month(s)";
         var start_date = Rally.util.DateTime.add(new Date(), 'month', -1 * period_length);
                 
+        var filters = Rally.data.lookback.QueryFilter.and([
+            {property:'_TypeHierarchy',value: type_path},
+            {property:'_ProjectHierarchy', value: project}
+        ]);
+        
+        var date_change_filter = Rally.data.lookback.QueryFilter.or([
+            { property: '_PreviousValues.ActualStartDate', operator: 'exists', value: true },
+            { property: '_PreviousValues.ActualEndDate', operator: 'exists', value: true },
+            { property: '_SnapshotNumber', value: 0 }
+        ]);
+        
+        var border_filter = Rally.data.lookback.QueryFilter.or([
+            {property:'__At', value: Rally.util.DateTime.toIsoString(Rally.util.DateTime.add(start_date,'day', 1))},
+            {property:'__At', value: 'current'}
+        ]);
+        
+        var change_filter = border_filter.or(date_change_filter);
+        
         container.add({
             xtype:'rallychart',
             storeType: 'Rally.data.lookback.SnapshotStore',
@@ -58,11 +76,11 @@ Ext.define("TSCFDByImpliedState", {
                 value_field: value_field
             },
             storeConfig: {
-                filters: [
-                    {property:'_TypeHierarchy',value: type_path},
-                    {property:'_ProjectHierarchy', value: project}
-                ],
-                fetch: [value_field,'ActualStartDate','ActualEndDate'],
+//                filters: filters.and(change_filter),
+                filters: filters,
+               
+                compress: true,
+                fetch: [value_field,'ActualStartDate','ActualEndDate','_UnformattedID'],
                 removeUnauthorizedSnapshots : true,
                 listeners: {
                     load: function() {
@@ -218,9 +236,7 @@ Ext.define("TSCFDByImpliedState", {
                     me._addCountToChoices(field_box.getStore());
                     me._filterOutExceptNumbers(field_box.getStore());
                     var value = me.getSetting('metric_field');
-                    
-                    console.log('value:', value);
-                    
+                                        
                     if ( value ) {
                         field_box.setValue(value);
                     }

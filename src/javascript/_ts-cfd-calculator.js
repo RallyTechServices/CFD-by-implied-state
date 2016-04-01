@@ -17,16 +17,16 @@ Ext.define("Rally.TechnicalServices.ImpliedCFDCalculator", {
         
         stateDisplayNames: ['Not Started','In Progress','Done'],
         
-        stateDisplayFunction: function(snapshot) {            
+        stateDisplayFunction: function(snapshot) {    
             if ( Ext.isEmpty(snapshot.ActualStartDate) ) {
-                return this.stateDisplayNames[2];
+                return this.stateDisplayNames[0];
             }
             
             if ( Ext.isEmpty(snapshot.ActualEndDate) ) {
                 return this.stateDisplayNames[1];
             }
             
-            return this.stateDisplayNames[0]
+            return this.stateDisplayNames[2]
         }
     },
     constructor: function (config) {
@@ -198,6 +198,7 @@ Ext.define("Rally.TechnicalServices.ImpliedCFDCalculator", {
         var calculator = this.prepareCalculator(calculatorConfig);
         
         var clean_snapshots = this._convertNullToBlank(snapshots);
+        
 //        if (this.allowed_oids !== null) {
 //            clean_snapshots = this._getAllowedSnapshots(clean_snapshots);
 //        }

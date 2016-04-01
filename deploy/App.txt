@@ -3,11 +3,11 @@
 <head>
     <title>TS CFD by Implied State</title>
     <!--  (c) 2015,2016 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Thu Mar 31 2016 14:35:37 GMT-0700 (PDT) -->
+    <!--  Build Date: Thu Mar 31 2016 17:43:29 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Thu Mar 31 2016 14:35:37 GMT-0700 (PDT)";
-        var CHECKSUM = 8241292532;
+        var APP_BUILD_DATE = "Thu Mar 31 2016 17:43:29 GMT-0700 (PDT)";
+        var CHECKSUM = 8980579128;
     </script>
     
     <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
@@ -195,16 +195,16 @@ Ext.define("Rally.TechnicalServices.ImpliedCFDCalculator", {
         
         stateDisplayNames: ['Not Started','In Progress','Done'],
         
-        stateDisplayFunction: function(snapshot) {            
+        stateDisplayFunction: function(snapshot) {    
             if ( Ext.isEmpty(snapshot.ActualStartDate) ) {
-                return this.stateDisplayNames[2];
+                return this.stateDisplayNames[0];
             }
             
             if ( Ext.isEmpty(snapshot.ActualEndDate) ) {
                 return this.stateDisplayNames[1];
             }
             
-            return this.stateDisplayNames[0]
+            return this.stateDisplayNames[2]
         }
     },
     constructor: function (config) {
@@ -376,6 +376,7 @@ Ext.define("Rally.TechnicalServices.ImpliedCFDCalculator", {
         var calculator = this.prepareCalculator(calculatorConfig);
         
         var clean_snapshots = this._convertNullToBlank(snapshots);
+        
 //        if (this.allowed_oids !== null) {
 //            clean_snapshots = this._getAllowedSnapshots(clean_snapshots);
 //        }
@@ -454,6 +455,24 @@ Ext.define("TSCFDByImpliedState", {
         var title = "Implied State CFD Over Last " + period_length + " Month(s)";
         var start_date = Rally.util.DateTime.add(new Date(), 'month', -1 * period_length);
                 
+        var filters = Rally.data.lookback.QueryFilter.and([
+            {property:'_TypeHierarchy',value: type_path},
+            {property:'_ProjectHierarchy', value: project}
+        ]);
+        
+        var date_change_filter = Rally.data.lookback.QueryFilter.or([
+            { property: '_PreviousValues.ActualStartDate', operator: 'exists', value: true },
+            { property: '_PreviousValues.ActualEndDate', operator: 'exists', value: true },
+            { property: '_SnapshotNumber', value: 0 }
+        ]);
+        
+        var border_filter = Rally.data.lookback.QueryFilter.or([
+            {property:'__At', value: Rally.util.DateTime.toIsoString(Rally.util.DateTime.add(start_date,'day', 1))},
+            {property:'__At', value: 'current'}
+        ]);
+        
+        var change_filter = border_filter.or(date_change_filter);
+        
         container.add({
             xtype:'rallychart',
             storeType: 'Rally.data.lookback.SnapshotStore',
@@ -464,11 +483,11 @@ Ext.define("TSCFDByImpliedState", {
                 value_field: value_field
             },
             storeConfig: {
-                filters: [
-                    {property:'_TypeHierarchy',value: type_path},
-                    {property:'_ProjectHierarchy', value: project}
-                ],
-                fetch: [value_field,'ActualStartDate','ActualEndDate'],
+//                filters: filters.and(change_filter),
+                filters: filters,
+               
+                compress: true,
+                fetch: [value_field,'ActualStartDate','ActualEndDate','_UnformattedID'],
                 removeUnauthorizedSnapshots : true,
                 listeners: {
                     load: function() {
@@ -624,9 +643,7 @@ Ext.define("TSCFDByImpliedState", {
                     me._addCountToChoices(field_box.getStore());
                     me._filterOutExceptNumbers(field_box.getStore());
                     var value = me.getSetting('metric_field');
-                    
-                    console.log('value:', value);
-                    
+                                        
                     if ( value ) {
                         field_box.setValue(value);
                     }
