@@ -8,7 +8,8 @@ Ext.define("TSCFDByImpliedState", {
     
     config: {
         defaultSettings: {
-            metric_field: "Count"
+            metric_field: "Count",
+            searchAllProjects: false,
         }
     },
     
@@ -47,11 +48,29 @@ Ext.define("TSCFDByImpliedState", {
 
         var title = "Implied State CFD Over Last " + period_length + " Month(s)";
         var start_date = Rally.util.DateTime.add(new Date(), 'month', -1 * period_length);
-                
-        var filters = Rally.data.lookback.QueryFilter.and([
-            {property:'_TypeHierarchy',value: type_path},
-            {property:'_ProjectHierarchy', value: project}
-        ]);
+        
+        var filters = new Rally.data.lookback.QueryFilter({
+            property:'_TypeHierarchy',value: type_path
+        });
+        
+        if (!this.searchAllProjects()) {
+            var projectFilter = new Rally.data.lookback.QueryFilter({
+                property:'_ProjectHierarchy', value: project
+            });
+            filters = filters.and(projectFilter);
+        }
+        
+        if (this.isMilestoneScoped()) {
+            var timeboxScope = this.getContext().getTimeboxScope();
+            if (timeboxScope) {
+                var milestoneQueryFilter = timeboxScope.getQueryFilter();
+                var milestoneFilter = new Rally.data.lookback.QueryFilter({
+                    property: milestoneQueryFilter.property,
+                    value: milestoneQueryFilter.value
+                });
+                filters = filters.and(milestoneFilter);
+            }
+        }
         
         var date_change_filter = Rally.data.lookback.QueryFilter.or([
             { property: '_PreviousValues.ActualStartDate', operator: 'exists', value: true },
@@ -146,12 +165,14 @@ Ext.define("TSCFDByImpliedState", {
         return typeof(this.getAppId()) == 'undefined';
     },
     
+    /*
     //onSettingsUpdate:  Override
     onSettingsUpdate: function (settings){
         this.logger.log('onSettingsUpdate',settings);
         // Ext.apply(this, settings);
         this.launch();
     },
+    */
     
     
     _addCountToChoices: function(store){
@@ -192,6 +213,14 @@ Ext.define("TSCFDByImpliedState", {
         var time_period = this.getSetting('time_period') || 1;
         
         return [
+        {
+          id:'searchAllProjects',
+          name:'searchAllProjects',
+          fieldLabel: 'Scope Across Workspace',
+          labelAlign: 'left',
+          xtype:'rallycheckboxfield',
+          hidden: !this.isMilestoneScoped()
+        },
         {
             name: 'type_path',
             xtype:'rallycombobox',
@@ -268,6 +297,26 @@ Ext.define("TSCFDByImpliedState", {
                 ]
             })
         }];
-    }
+    },
+    
+    isMilestoneScoped: function() {
+        var result = false;
+        
+        var tbscope = this.getContext().getTimeboxScope();
+        if (tbscope && tbscope.getType() == 'milestone') {
+            result = true;
+        }
+        return result
+    },
+    
+    searchAllProjects: function() {
+        var searchAllProjects = this.getSetting('searchAllProjects');
+        return this.isMilestoneScoped() && searchAllProjects;
+    },
+    
+    onTimeboxScopeChange: function(newTimeboxScope) {
+        this.callParent(arguments);
+        this._makeChart();
+    },
     
 });
