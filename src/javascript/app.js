@@ -49,9 +49,15 @@ Ext.define("TSCFDByImpliedState", {
         var title = "Implied State CFD Over Last " + period_length + " Month(s)";
         var start_date = Rally.util.DateTime.add(new Date(), 'month', -1 * period_length);
         
-        var filters = new Rally.data.lookback.QueryFilter({
-            property:'_TypeHierarchy',value: type_path
-        });
+        var filters = new Rally.data.lookback.QueryFilter.and([
+            {property:'_TypeHierarchy',value: type_path},
+        ]);
+        
+        var dateFilters = new Rally.data.lookback.QueryFilter.or([
+            {property:'_ValidFrom', operator: ">=", value: Rally.util.DateTime.toIsoString(start_date)},
+            {property:'_ValidTo', operator: ">=", value: Rally.util.DateTime.toIsoString(start_date)}
+        ]);
+        filters = filters.and(dateFilters);
         
         if (!this.searchAllProjects()) {
             var projectFilter = new Rally.data.lookback.QueryFilter({
@@ -60,16 +66,9 @@ Ext.define("TSCFDByImpliedState", {
             filters = filters.and(projectFilter);
         }
         
-        if (this.isMilestoneScoped()) {
-            var timeboxScope = this.getContext().getTimeboxScope();
-            if (timeboxScope) {
-                var milestoneQueryFilter = timeboxScope.getQueryFilter();
-                var milestoneFilter = new Rally.data.lookback.QueryFilter({
-                    property: milestoneQueryFilter.property,
-                    value: milestoneQueryFilter.value
-                });
-                filters = filters.and(milestoneFilter);
-            }
+        var milestoneFilter = this.getMilestoneFilter();
+        if ( milestoneFilter ) {
+            filters = filters.and(milestoneFilter);
         }
         
         var date_change_filter = Rally.data.lookback.QueryFilter.or([
@@ -99,7 +98,7 @@ Ext.define("TSCFDByImpliedState", {
                 filters: filters,
                
                 compress: true,
-                fetch: [value_field,'ActualStartDate','ActualEndDate','_UnformattedID'],
+                fetch: [value_field,'ActualStartDate','ActualEndDate','_UnformattedID', 'Milestones'],
                 removeUnauthorizedSnapshots : true,
                 listeners: {
                     load: function() {
@@ -312,6 +311,27 @@ Ext.define("TSCFDByImpliedState", {
     searchAllProjects: function() {
         var searchAllProjects = this.getSetting('searchAllProjects');
         return this.isMilestoneScoped() && searchAllProjects;
+    },
+    
+    getMilestoneFilter: function() {
+        var result;
+        if (this.isMilestoneScoped()) {
+            var timeboxScope = this.getContext().getTimeboxScope();
+            if (timeboxScope) {
+                // timeboxScope.getQueryFilter() returns milestone refs like '/milestone/1234',
+                // as the query value, but lookback requires the object ID only.
+                var oid = null;
+                var milestone = timeboxScope.getRecord();
+                if ( milestone ) {
+                    oid = milestone.get('ObjectID');
+                }
+                result = new Rally.data.lookback.QueryFilter({
+                    property: 'Milestones',
+                    value: oid
+                });
+            }
+        }
+        return result;
     },
     
     onTimeboxScopeChange: function(newTimeboxScope) {
