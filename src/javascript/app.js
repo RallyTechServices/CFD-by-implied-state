@@ -289,10 +289,8 @@ Ext.define("TSCFDByImpliedState", {
             store: Ext.create('Rally.data.custom.Store',{
                 data: [
                     {name:'A Month Ago', value:1},
-                    {name:'3 Months Ago', value:3},
-                    {name:'6 Months Ago', value:6},
-                    {name:'A Year Ago', value:12 },
-                    {name:'3 Years Ago', value:36 }
+                    {name:'2 Months Ago', value:2},
+                    {name:'3 Months Ago', value:3}
                 ]
             })
         }];

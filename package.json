@@ -1,6 +1,6 @@
 {
   "name": "CFD-by-implied-state",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "scripts": {
     "debug": "grunt debug",
     "debug:watch": "nodemon --exec grunt debug",
