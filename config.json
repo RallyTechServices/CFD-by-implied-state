@@ -1,4 +1,9 @@
 {
     "sdk": "2.1",
-    "className": "TSCFDByImpliedState"
+    "className": "TSCFDByImpliedState",
+    "javascript": [
+        "node_modules/@agile-central-technical-services/utils-ancestor-pi-app-filter/index.js",
+        "src/javascript/utils/*.js",
+        "src/javascript/*.js"
+    ]
 }
