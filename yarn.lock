@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@agile-central-technical-services/utils-ancestor-pi-app-filter@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@agile-central-technical-services/utils-ancestor-pi-app-filter/-/utils-ancestor-pi-app-filter-2.0.2.tgz#7f45a5ae7751a21ae1148444e6ff24fcb6b98aea"
+
 "@sinonjs/commons@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.0.2.tgz#3e0ac737781627b8844257fadc3d803997d0526e"
