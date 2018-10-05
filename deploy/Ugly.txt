@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CFD-by-implied-state-0.2.4</title>
+    <title>CFD-by-implied-state-0.2.3</title>
     <!--  (c) 2017 CA Technologies.  All Rights Reserved. -->
-    <!--  Build Date: Fri Oct 05 2018 17:27:26 GMT+0000 (UTC) -->
+    <!--  Build Date: Fri Oct 05 2018 17:29:01 GMT+0000 (UTC) -->
 
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Fri Oct 05 2018 17:27:26 GMT+0000 (UTC)";
-        var CHECKSUM = 10673875973;
+        var APP_BUILD_DATE = "Fri Oct 05 2018 17:29:01 GMT+0000 (UTC)";
+        var CHECKSUM = 10673874012;
     </script>
 
     <script type="text/javascript" src="/apps/2.1/sdk.js"></script>
