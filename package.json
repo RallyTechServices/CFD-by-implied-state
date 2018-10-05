@@ -1,6 +1,6 @@
 {
   "name": "CFD-by-implied-state",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "scripts": {
     "debug": "grunt debug",
     "debug:watch": "nodemon --exec grunt debug",
@@ -9,7 +9,7 @@
     "deploy-debugsdk:watch": "nodemon --exec grunt deploy-debugsdk"
   },
   "dependencies": {
-    "@agile-central-technical-services/utils-ancestor-pi-app-filter": "^2.0.1"
+    "@agile-central-technical-services/utils-ancestor-pi-app-filter": "^2.0.2"
   },
   "devDependencies": {
     "grunt": "~0.4.5",

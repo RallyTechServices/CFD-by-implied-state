@@ -28,6 +28,7 @@ Ext.define("TSCFDByImpliedState", {
     plugins: [{
         ptype: 'UtilsAncestorPiAppFilter',
         pluginId: 'ancestorFilterPlugin',
+        allowNoEntry: false // Lookback can't query _ItemHierarchy by a null ancestor
     }],
 
     launch: function() {
@@ -94,9 +95,10 @@ Ext.define("TSCFDByImpliedState", {
                 if (ancestorFilter) {
                     // ancestorFilterPlugin.getFilterForType() returns milestone refs like '/milestone/1234',
                     // as the query value, but lookback requires the object ID only.
+                    // Convert this query to an _ItemHieararchy. Lookback won't support more than 2 Parent levels (Parent.Parent.Parent returns no results)
                     var ancestorLookbackFilter = new Rally.data.lookback.QueryFilter({
-                        property: ancestorFilter.property,
-                        value: Rally.util.Ref.getOidFromRef(ancestorFilter.value)
+                        property: '_ItemHierarchy',
+                        value: Rally.util.Ref.getOidFromRef(ancestorFilter.value) || 0
                     });
                     filters = filters.and(ancestorLookbackFilter);
                 }
