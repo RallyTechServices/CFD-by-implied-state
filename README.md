@@ -12,6 +12,9 @@ The Y axis calculation and Portfolio Item type can be chosen from settings.
 
 ![Chart](./images/settings.png)
 
+Optionally, the application can also filter by an ancestor portfolio item. For example,
+only Features under a parent Epic XYZ.
+
 
 ## Development Notes
 
