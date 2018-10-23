@@ -15,7 +15,13 @@ Ext.define("TSCFDByImpliedState", {
 
     items: [{
         id: Utils.AncestorPiAppFilter.RENDER_AREA_ID,
-        xtype: 'container'
+        xtype: 'container',
+        flex: 1,
+        layout: {
+            type: 'hbox',
+            align: 'middle',
+            defaultMargins: '0 10 10 0',
+        }
     }, {
         xtype: 'container',
         itemId: 'display_box'
@@ -25,29 +31,41 @@ Ext.define("TSCFDByImpliedState", {
         name: "TSCFDByImpliedState"
     },
 
-    plugins: [{
-        ptype: 'UtilsAncestorPiAppFilter',
-        pluginId: 'ancestorFilterPlugin',
-        allowNoEntry: false // Lookback can't query _ItemHierarchy by a null ancestor
-    }],
-
     launch: function() {
-
-        if (!this.getSetting('type_path')) {
-            this.down('#display_box').add({
-                xtype: 'container',
-                html: 'No settings applied.  Select "Edit App Settings." from the gear menu.'
-            });
-            return;
-        }
-
-        // Update the chart when the filters change
-        var ancestorFilterPlugin = this.getPlugin('ancestorFilterPlugin');
-        ancestorFilterPlugin.on('select', function() {
-            this._makeChart();
-        }, this);
-
-        this._makeChart();
+        this.ancestorFilterPlugin = Ext.create('Utils.AncestorPiAppFilter', {
+            ptype: 'UtilsAncestorPiAppFilter',
+            pluginId: 'ancestorFilterPlugin',
+            // Set to false to prevent the '-- None --' selection option if your app can't support
+            // querying by a null ancestor (e.g. Lookback _ItemHierarchy)
+            allowNoEntry: false, // Lookback can't query _ItemHierarchy by a null ancestor
+            settingsConfig: {
+                labelWidth: 100,
+                minWidth: 200,
+                margin: 10,
+            },
+            listeners: {
+                scope: this,
+                ready: function(plugin) {
+                    if (!this.getSetting('type_path')) {
+                        this.down('#display_box').add({
+                            xtype: 'container',
+                            html: 'No settings applied.  Select "Edit App Settings." from the gear menu.'
+                        });
+                        return;
+                    }
+                    else {
+                        plugin.addListener({
+                            scope: this,
+                            select: function() {
+                                this._makeChart();
+                            }
+                        });
+                        this._makeChart();
+                    }
+                }
+            }
+        });
+        this.addPlugin(this.ancestorFilterPlugin);
     },
 
     _makeChart: function() {
@@ -88,96 +106,87 @@ Ext.define("TSCFDByImpliedState", {
             filters = filters.and(milestoneFilter);
         }
 
-        var ancestorFilterPlugin = this.getPlugin('ancestorFilterPlugin');
-        ancestorFilterPlugin.getFilterForType(type_path).then({
-            scope: this,
-            success: function(ancestorFilter) {
-                if (ancestorFilter) {
-                    // ancestorFilterPlugin.getFilterForType() returns milestone refs like '/milestone/1234',
-                    // as the query value, but lookback requires the object ID only.
-                    // Convert this query to an _ItemHieararchy. Lookback won't support more than 2 Parent levels (Parent.Parent.Parent returns no results)
-                    var ancestorLookbackFilter = new Rally.data.lookback.QueryFilter({
-                        property: '_ItemHierarchy',
-                        value: Rally.util.Ref.getOidFromRef(ancestorFilter.value) || 0
-                    });
-                    filters = filters.and(ancestorLookbackFilter);
+        var ancestorFilter = this.ancestorFilterPlugin.getFilterForType(type_path);
+        if (ancestorFilter) {
+            // ancestorFilterPlugin.getFilterForType() returns milestone refs like '/milestone/1234',
+            // as the query value, but lookback requires the object ID only.
+            // Convert this query to an _ItemHieararchy. Lookback won't support more than 2 Parent levels (Parent.Parent.Parent returns no results)
+            var ancestorLookbackFilter = new Rally.data.lookback.QueryFilter({
+                property: '_ItemHierarchy',
+                value: Rally.util.Ref.getOidFromRef(ancestorFilter.value) || 0
+            });
+            filters = filters.and(ancestorLookbackFilter);
+        }
+        var date_change_filter = Rally.data.lookback.QueryFilter.or([
+            { property: '_PreviousValues.ActualStartDate', operator: 'exists', value: true },
+            { property: '_PreviousValues.ActualEndDate', operator: 'exists', value: true },
+            { property: '_SnapshotNumber', value: 0 }
+        ]);
+
+        var border_filter = Rally.data.lookback.QueryFilter.or([
+            { property: '__At', value: Rally.util.DateTime.toIsoString(Rally.util.DateTime.add(start_date, 'day', 1)) },
+            { property: '__At', value: 'current' }
+        ]);
+
+        var change_filter = border_filter.or(date_change_filter);
+
+        container.add({
+            xtype: 'rallychart',
+            storeType: 'Rally.data.lookback.SnapshotStore',
+            calculatorType: 'Rally.TechnicalServices.ImpliedCFDCalculator',
+            calculatorConfig: {
+                startDate: start_date,
+                endDate: new Date(),
+                value_field: value_field
+            },
+            storeConfig: {
+                //                filters: filters.and(change_filter),
+                filters: filters,
+
+                compress: true,
+                fetch: [value_field, 'ActualStartDate', 'ActualEndDate', '_UnformattedID', 'Milestones'],
+                removeUnauthorizedSnapshots: true,
+                listeners: {
+                    load: function() {
+                        me.setLoading(false);
+                    }
                 }
-            }
-        }).then({
-            scope: this,
-            success: function() {
-                var date_change_filter = Rally.data.lookback.QueryFilter.or([
-                    { property: '_PreviousValues.ActualStartDate', operator: 'exists', value: true },
-                    { property: '_PreviousValues.ActualEndDate', operator: 'exists', value: true },
-                    { property: '_SnapshotNumber', value: 0 }
-                ]);
-
-                var border_filter = Rally.data.lookback.QueryFilter.or([
-                    { property: '__At', value: Rally.util.DateTime.toIsoString(Rally.util.DateTime.add(start_date, 'day', 1)) },
-                    { property: '__At', value: 'current' }
-                ]);
-
-                var change_filter = border_filter.or(date_change_filter);
-
-                container.add({
-                    xtype: 'rallychart',
-                    storeType: 'Rally.data.lookback.SnapshotStore',
-                    calculatorType: 'Rally.TechnicalServices.ImpliedCFDCalculator',
-                    calculatorConfig: {
-                        startDate: start_date,
-                        endDate: new Date(),
-                        value_field: value_field
-                    },
-                    storeConfig: {
-                        //                filters: filters.and(change_filter),
-                        filters: filters,
-
-                        compress: true,
-                        fetch: [value_field, 'ActualStartDate', 'ActualEndDate', '_UnformattedID', 'Milestones'],
-                        removeUnauthorizedSnapshots: true,
-                        listeners: {
-                            load: function() {
-                                me.setLoading(false);
-                            }
-                        }
-                    },
-                    chartColors: ["#CCCCCC", "#00a9e0", "#009933"],
-                    chartConfig: {
-                        chart: {
-                            zoomType: 'xy',
-                            //height: height,
-                            events: {
-                                redraw: function() {
-                                    //                            me.logger.log('howdy');
-                                    //                            me._preProcess();
-                                }
-                            }
-                        },
-                        title: {
-                            text: title
-                        },
-                        xAxis: {
-                            tickmarkPlacement: 'on',
-                            tickInterval: 30,
-                            title: {
-                                text: ''
-                            }
-                        },
-                        yAxis: [{
-                            title: {
-                                text: value_field
-                            }
-                        }],
-                        plotOptions: {
-                            series: {
-                                marker: { enabled: false },
-                                stacking: 'normal'
-                            }
+            },
+            chartColors: ["#CCCCCC", "#00a9e0", "#009933"],
+            chartConfig: {
+                chart: {
+                    zoomType: 'xy',
+                    //height: height,
+                    events: {
+                        redraw: function() {
+                            //                            me.logger.log('howdy');
+                            //                            me._preProcess();
                         }
                     }
-                });
+                },
+                title: {
+                    text: title
+                },
+                xAxis: {
+                    tickmarkPlacement: 'on',
+                    tickInterval: 30,
+                    title: {
+                        text: ''
+                    }
+                },
+                yAxis: [{
+                    title: {
+                        text: value_field
+                    }
+                }],
+                plotOptions: {
+                    series: {
+                        marker: { enabled: false },
+                        stacking: 'normal'
+                    }
+                }
             }
-        })
+        });
     },
 
     getOptions: function() {
@@ -250,27 +259,20 @@ Ext.define("TSCFDByImpliedState", {
                 fieldLabel: 'Scope Across Workspace',
                 labelAlign: 'left',
                 xtype: 'rallycheckboxfield',
+                labelWidth: 100,
+                minWidth: 200,
+                margin: 10,
                 hidden: !this.isMilestoneScoped()
             },
             {
                 name: 'type_path',
-                xtype: 'rallycombobox',
-                displayField: 'DisplayName',
-                fieldLabel: 'Artifact Type',
-                autoExpand: true,
-                storeConfig: {
-                    model: 'TypeDefinition',
-                    filters: [
-                        { property: 'TypePath', operator: 'contains', value: 'PortfolioItem/' }
-                    ]
-                },
+                xtype: 'rallyportfolioitemtypecombobox',
+                valueField: 'TypePath',
+                defaultSelectionPosition: null,
                 labelWidth: 100,
                 labelAlign: 'left',
                 minWidth: 200,
-                margin: 10,
-                valueField: 'TypePath',
-                bubbleEvents: ['select', 'ready'],
-                readyEvent: 'ready'
+                margin: 10
             },
             {
                 name: 'metric_field',
@@ -283,14 +285,6 @@ Ext.define("TSCFDByImpliedState", {
                 autoExpand: false,
                 alwaysExpanded: false,
                 model: 'PortfolioItem',
-                //            handlesEvents: { 
-                //                select: function(type_picker) {
-                //                    this.refreshWithNewModelType(type_picker.getValue());
-                //                },
-                //                ready: function(type_picker){
-                //                    this.refreshWithNewModelType(type_picker.getValue());
-                //                }
-                //            },
                 listeners: {
                     ready: function(field_box) {
                         me._addCountToChoices(field_box.getStore());
