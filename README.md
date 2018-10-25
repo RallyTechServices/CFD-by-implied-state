@@ -13,7 +13,8 @@ The Y axis calculation and Portfolio Item type can be chosen from settings.
 ![Chart](./images/settings.png)
 
 Optionally, the application can also filter by an ancestor portfolio item. For example,
-only Features under a parent Epic XYZ.
+only Features under a parent Epic XYZ. If placed on a page that also has a [pi-ancestor-filter-broadcaster](https://github.com/RallyTechServices/pi-ancestor-filter-broadcaster),
+and filter by ancestor portfolio item is enabled, it will listen to the broadcaster for the selected ancestor.
 
 
 ## Development Notes
