@@ -9,7 +9,6 @@ Ext.define("TSCFDByImpliedState", {
     config: {
         defaultSettings: {
             metric_field: "Count",
-            searchAllProjects: false,
         }
     },
 
@@ -254,17 +253,6 @@ Ext.define("TSCFDByImpliedState", {
         var time_period = this.getSetting('time_period') || 1;
 
         return [{
-                id: 'searchAllProjects',
-                name: 'searchAllProjects',
-                fieldLabel: 'Scope Across Workspace',
-                labelAlign: 'left',
-                xtype: 'rallycheckboxfield',
-                labelWidth: 100,
-                minWidth: 200,
-                margin: 10,
-                hidden: !this.isMilestoneScoped()
-            },
-            {
                 name: 'type_path',
                 xtype: 'rallyportfolioitemtypecombobox',
                 valueField: 'TypePath',
@@ -334,8 +322,7 @@ Ext.define("TSCFDByImpliedState", {
     },
 
     searchAllProjects: function() {
-        var searchAllProjects = this.getSetting('searchAllProjects');
-        return this.isMilestoneScoped() && searchAllProjects;
+        return this.ancestorFilterPlugin.getIgnoreProjectScope();
     },
 
     getMilestoneFilter: function() {
