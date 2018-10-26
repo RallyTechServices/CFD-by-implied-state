@@ -16,7 +16,7 @@ Optionally, the application can also filter by an ancestor portfolio item. For e
 only Features under a parent Epic XYZ. If placed on a page that also has a [pi-ancestor-filter-broadcaster](https://github.com/RallyTechServices/pi-ancestor-filter-broadcaster),
 and filter by ancestor portfolio item is enabled, it will listen to the broadcaster for the selected ancestor.
 
-Optionally, the application can ignore project scope if on a milestone scoped page.
+Optionally, the application can ignore project scope.
 
 ## Development Notes
 
