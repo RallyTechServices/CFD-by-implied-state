@@ -18,6 +18,8 @@ and filter by ancestor portfolio item is enabled, it will listen to the broadcas
 
 Optionally, the application can ignore project scope.
 
+The app will respect *Milestone* filtered pages, but *not* Release or Iteration scoped pages.
+
 ## Development Notes
 
 ### First Load
