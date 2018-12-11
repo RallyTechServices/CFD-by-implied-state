@@ -67,6 +67,11 @@ Ext.define("TSCFDByImpliedState", {
         this.addPlugin(this.ancestorFilterPlugin);
     },
 
+    setLoading: function(loading) {
+        var displayBox = this.down('#display_box');
+        displayBox.setLoading(loading);
+    },
+
     _makeChart: function() {
         var me = this;
         var container = this.down('#display_box');
